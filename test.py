@@ -10,10 +10,13 @@ import sys
 # Ideally, I will rewrite all of this in C++ for efficiency.
 
 debug = False # Just to check debugging
+show_plot = False
 for i in range(len(sys.argv)):
     if sys.argv[i][0] == '-':
         if sys.argv[i][1:] == "debug":
             debug = True
+        if sys.argv[i][1:] == "plot":
+            show_plot = True
 
 # Parameters
 frequency = 1        # Hz
@@ -56,13 +59,20 @@ if debug:
     print(symbolic_perturbed_sine)
 
 # Compress using Sequitur
+
+# Compress sine wave
 symbols = symbolic_sine[0].tolist()  # list of symbols
 grammar = parse(symbols)
 print(grammar)
 
+# Compress perturbed sine wave
+symbols = symbolic_perturbed_sine[0].tolist()  # list of symbols
+grammar_perturbed = parse(symbols)
+print("perturbed: ", grammar_perturbed)
+
 
 # Plot sine wave
-if debug:
+if show_plot:
     plt.plot(t, amplitude)
     plt.plot(t, amplitude_semi_rand)
     plt.title(f"{frequency} Hz Sine Wave")
