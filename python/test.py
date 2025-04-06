@@ -106,19 +106,18 @@ library's capabilities which uses LZ77 and Huffman to compress.
 
 # Step 1: Quantize the float data
 # Convert to 1-byte integers (e.g., 0–255)
-scaled = ((amplitude + 1) / 2 * 255).astype(np.uint8)
+quantized_sine = ((amplitude + 1) / 2 * 255).astype(np.uint8)
 
 # Step 2: Convert to bytes
-byte_data = scaled.tobytes()
+byte_data_sine = quantized_sine.tobytes()
 
 # Step 3: Compress using zlib (uses LZ77 + Huffman)
-compressed = zlib.compress(byte_data)
+compressed_sine = zlib.compress(byte_data_sine)
 
 # Compare sizes
-print(f"Original size: {len(byte_data)} bytes")
-print(f"Compressed size: {len(compressed)} bytes")
-print(f"Compression ratio: {len(compressed) / len(byte_data):.2f}")
-
+print(f"Original size: {len(byte_data_sine)} bytes")
+print(f"Compressed size: {len(compressed_sine)} bytes")
+print(f"Compression ratio: {len(compressed_sine) / len(byte_data_sine):.2f}")
 
 # Plot sine wave
 if show_plot:
