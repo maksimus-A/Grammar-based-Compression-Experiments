@@ -6,6 +6,8 @@
 #include <cstring>
 #include "sequitur.hpp"
 #include "huffman.hpp"
+#include <fstream>
+#include <string>
 
 using namespace jw;
 
@@ -42,12 +44,52 @@ private:
     std::vector<uint8_t> output;
 };
 
+// Save any vector of doubles to a CSV file
+void write_to_file(const std::vector<double>& data, const std::string& filename) {
+    std::ofstream out(filename);
+    if (!out.is_open()) {
+        std::cerr << "Failed to open file: " << filename << "\n";
+        return;
+    }
+    for (const auto& val : data) {
+        out << val << "\n";
+    }
+    out.close();
+}
+
+// Functions made for re-pair, to read in their files and file sizes.
+std::vector<uint8_t> read_file(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary);  // open in binary mode
+    if (!file) {
+        std::cerr << "Error opening file: " << filename << "\n";
+        return {};
+    }
+    std::vector<uint8_t> data((std::istreambuf_iterator<char>(file)),
+                               std::istreambuf_iterator<char>());
+    return data;
+}
+
+// For re-pair.
+void print_combined_compression_ratio(const std::string& label,
+                                      size_t original_size,
+                                      const std::vector<uint8_t>& prel,
+                                      const std::vector<uint8_t>& seq) {
+    size_t combined_size = prel.size() + seq.size();
+    double ratio = static_cast<double>(combined_size) / original_size;
+
+    std::cout << label << ":\n";
+    std::cout << "Prel size: " << prel.size() << " bytes\n";
+    std::cout << "Seq size:  " << seq.size() << " bytes\n";
+    std::cout << "Combined:  " << combined_size << " bytes\n";
+    std::cout << "Compression ratio (combined / original): " << ratio << "\n\n";
+}
+
 // Parameters
 const double frequency = 1.0;
 const int sampling_rate = 500;
-const double duration = 20.0;
+const double duration = 2000.0;
 const double randomizer_range = 0.15; // Range for semi-random sine
-const double max_step = 0.5; // Step size of random walk
+const double max_step = 1.0; // Step size of random walk
 const int signal_length = static_cast<int>(sampling_rate * duration);
 
 // Generate time vector
@@ -65,6 +107,7 @@ std::vector<double> generate_sine(const std::vector<double>& t) {
     for (int i = 0; i < signal_length; ++i) {
         amplitude[i] = std::sin(2.0 * M_PI * frequency * t[i]);
     }
+    write_to_file(amplitude, "sine.csv");
     return amplitude;
 }
 
@@ -77,6 +120,7 @@ std::vector<double> perturb_sine(const std::vector<double>& sine) {
     for (double &val : perturbed) {
         val += dist(gen);
     }
+    write_to_file(perturbed, "sine_perturbed.csv");
     return perturbed;
 }
 
@@ -91,6 +135,7 @@ std::vector<double> generate_random_walk() {
         point += dist(gen);
         walk[i] = point;
     }
+    write_to_file(walk, "random_walk.csv");
     return walk;
 }
 
@@ -349,6 +394,22 @@ int main() {
     print_compression_ratio("Sequitur Sine", q_sine.size(), sine_seq_huffman.size());
     print_compression_ratio("Sequitur Semi-Random", q_semi_rand.size(), semi_rand_seq_huffman.size());
     print_compression_ratio("Sequitur Random Walk", q_walk.size(), walk_seq_huffman.size());
+
+    // Now check re-pair (This did not work at all. Seems )
+    std::cout << "\nGrammar-Based Re-Pair:\n" << std::endl;
+    auto prel_sine = read_file("./repair_outputs/sine.csv.prel");
+    auto seq_sine_f  = read_file("./repair_outputs/sine.csv.seq");
+    auto prel_semi_rand = read_file("./repair_outputs/sine_perturbed.csv.prel");
+    auto seq_semi_rand_f  = read_file("./repair_outputs/sine_perturbed.csv.seq");
+    auto prel_walk = read_file("./repair_outputs/random_walk.csv.prel");
+    auto seq_walk_f  = read_file("./repair_outputs/random_walk.csv.seq");
+
+    print_combined_compression_ratio("Sine Combined", q_sine.size(), prel_sine, seq_sine_f);
+    print_combined_compression_ratio("Sine Perturbed Combined", q_sine.size(), prel_sine, seq_semi_rand_f);
+    print_combined_compression_ratio("Walk Combined", q_sine.size(), prel_sine, seq_walk_f);
+
+
+
 
     // Debug: Print sequitur rulesets
     // std::cout << "Sine rules:" << std::endl;
