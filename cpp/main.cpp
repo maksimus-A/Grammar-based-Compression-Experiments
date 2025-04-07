@@ -9,6 +9,8 @@
 
 using namespace jw;
 
+// Used for bitpacked sequitur serialization.
+// (Not in use right now)
 class BitWriter {
 public:
     void writeBits(uint32_t value, uint8_t numBits) {
@@ -43,9 +45,9 @@ private:
 // Parameters
 const double frequency = 1.0;
 const int sampling_rate = 500;
-const double duration = 5.0;
-const double randomizer_range = 0.05;
-const double max_step = 0.25;
+const double duration = 20.0;
+const double randomizer_range = 0.15; // Range for semi-random sine
+const double max_step = 0.5; // Step size of random walk
 const int signal_length = static_cast<int>(sampling_rate * duration);
 
 // Generate time vector
@@ -335,14 +337,18 @@ int main() {
     print_compression_ratio("Sine Wave", q_sine.size(), z_sine.size());
     print_compression_ratio("Semi-Random Sine", q_semi_rand.size(), z_semi_rand.size());
     print_compression_ratio("Random Walk", q_walk.size(), z_walk.size());
+    std::cout << "\nGrammar-Based RAW:\n" << std::endl;
+    print_compression_ratio("Sequitur Sine", q_sine.size(), seq_sine_serialized.size());
+    print_compression_ratio("Sequitur Semi-Random", q_semi_rand.size(), seq_semi_rand_serialized.size());
+    print_compression_ratio("Sequitur Random Walk", q_walk.size(), seq_walk_serialized.size());
     std::cout << "\nGrammar-Based ZLIB:\n" << std::endl;
     print_compression_ratio("Sequitur Sine", q_sine.size(), seq_sine_z.size());
-    print_compression_ratio("Sequitur Semi-Random", q_sine.size(), seq_semi_rand_z.size());
-    print_compression_ratio("Sequitur Random Walk", q_sine.size(), seq_walk_z.size());
+    print_compression_ratio("Sequitur Semi-Random", q_semi_rand.size(), seq_semi_rand_z.size());
+    print_compression_ratio("Sequitur Random Walk", q_walk.size(), seq_walk_z.size());
     std::cout << "\nGrammar-Based HUFFMAN:\n" << std::endl;
     print_compression_ratio("Sequitur Sine", q_sine.size(), sine_seq_huffman.size());
-    print_compression_ratio("Sequitur Semi-Random", q_sine.size(), semi_rand_seq_huffman.size());
-    print_compression_ratio("Sequitur Random Walk", q_sine.size(), walk_seq_huffman.size());
+    print_compression_ratio("Sequitur Semi-Random", q_semi_rand.size(), semi_rand_seq_huffman.size());
+    print_compression_ratio("Sequitur Random Walk", q_walk.size(), walk_seq_huffman.size());
 
     // Debug: Print sequitur rulesets
     // std::cout << "Sine rules:" << std::endl;
