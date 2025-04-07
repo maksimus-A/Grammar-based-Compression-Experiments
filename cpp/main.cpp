@@ -217,12 +217,17 @@ int main() {
     auto seq_walk = compress_sequitur(symbol_walk);
     // Serialize to compare compression ratio
     auto seq_sine_serialized = serialize_sequitur(seq_sine);
-
+    auto seq_semi_rand_serialized = serialize_sequitur(seq_semi_rand);
+    auto seq_walk_serialized = serialize_sequitur(seq_walk);
     // Report
+    std::cout << "Traditional:\n" << std::endl;
     print_compression_ratio("Sine Wave", q_sine.size(), z_sine.size());
     print_compression_ratio("Semi-Random Sine", q_semi_rand.size(), z_semi_rand.size());
     print_compression_ratio("Random Walk", q_walk.size(), z_walk.size());
+    std::cout << "Grammar-Based:\n" << std::endl;
     print_compression_ratio("Sequitur Sine", q_sine.size(), seq_sine_serialized.size());
+    print_compression_ratio("Sequitur Semi-Random", q_sine.size(), seq_semi_rand_serialized.size());
+    print_compression_ratio("Sequitur Random Walk", q_sine.size(), seq_walk_serialized.size());
 
     // Debug: Print sequitur rulesets
     // std::cout << "Sine rules:" << std::endl;
